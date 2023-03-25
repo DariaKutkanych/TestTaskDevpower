@@ -1,0 +1,43 @@
+version: "3"
+
+
+services:
+
+  get_data:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    depends_on:
+      - db
+    command: sh -c "alembic upgrade head && python3 get_data.py"
+    working_dir: /myapp
+    volumes:
+      - .:/myapp
+
+  print_data:
+    build: .
+    volumes:
+      - .:/myapp
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT1}:${APP_PORT}"
+    depends_on:
+      - db
+    command: sh -c "python3 print_data.py"
+ 
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+volumes:
+  postgres-data:
